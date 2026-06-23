@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, ImageOps, ImageDraw, ImageFilter
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -34,6 +35,15 @@ from download_data import generate_synthetic_xray, generate_synthetic_ct
 
 # App initialization
 app = FastAPI(title="SynthoCT Backend Server", version="1.0.0")
+
+# Add CORS Middleware to allow requests from the GitHub Pages frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict this to your GitHub Pages domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global model state
 generator_A2B = None
@@ -177,6 +187,12 @@ def simulate_ct_to_xray(img):
 
 @app.on_event("startup")
 def startup_event():
+    # Load model checkpoints from env vars or defaults during production server startup
+    checkpoint_path = os.environ.get("CHECKPOINT_PATH", "")
+    device_type = os.environ.get("DEVICE", "cuda" if (has_torch and torch.cuda.is_available()) else "cpu")
+    print(f"Startup: Loading models from checkpoint '{checkpoint_path}' on device '{device_type}'...")
+    load_models(checkpoint_path, device_type)
+
     os.makedirs("static/samples", exist_ok=True)
     
     # Generate static sample images dynamically if they don't exist yet

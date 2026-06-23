@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: synthoct-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn web_app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: CHECKPOINT_PATH
+        value: ""
+      - key: DEVICE
+        value: "cpu"

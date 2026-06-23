@@ -1,3 +1,7 @@
+// Configuration: Set this to your deployed backend URL (e.g. "https://synthoct-backend.onrender.com")
+// Leave empty for local relative path development.
+const API_BASE = "";
+
 document.addEventListener("DOMContentLoaded", () => {
     // --- DOM Elements ---
     const tabBtns = document.querySelectorAll(".tab-btn");
@@ -42,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Status Badge ---
     async function checkServerStatus() {
         try {
-            const response = await fetch("/api/status");
+            const response = await fetch(`${API_BASE}/api/status`);
             if (response.ok) {
                 const data = await response.json();
                 statusBadge.className = "badge"; // Reset classes
@@ -224,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const direction = selectDirection.value;
 
         try {
-            const response = await fetch("/api/translate", {
+            const response = await fetch(`${API_BASE}/api/translate`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

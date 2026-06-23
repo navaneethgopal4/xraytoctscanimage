@@ -1,0 +1,9 @@
+torch
+torchvision
+gradio
+opencv-python
+scikit-image
+numpy
+pillow
+pydicom
+matplotlib

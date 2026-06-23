@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.env
+
+# Project specific data and checkpoints
+data/
+checkpoints/
+samples/
+results/
+
+# IDE / Editor folders
+.vscode/
+.idea/
+.gemini/
+.DS_Store

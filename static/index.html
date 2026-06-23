@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynthoCT — Generative X-ray to CT Image Translation</title>
+    <meta name="description" content="AI-powered medical image translation. Synthesize cross-sectional axial CT slices from 2D chest X-ray scans.">
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="background-glows">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+    </div>
+
+    <header class="app-header">
+        <div class="container header-container">
+            <div class="logo-area">
+                <i class="fa-solid fa-microscope logo-icon"></i>
+                <div class="brand-text">
+                    <h1>SynthoCT</h1>
+                    <span class="sub-brand">AI Image Translation Engine</span>
+                </div>
+            </div>
+            <div class="status-badge-container">
+                <div id="status-badge" class="badge badge-simulated">
+                    <span class="pulse-dot"></span>
+                    <span id="status-text">Checking server connection...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container app-content">
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs" id="nav-tabs" aria-label="Main Navigation">
+            <button class="tab-btn active" id="tab-btn-workspace" data-tab="workspace">
+                <i class="fa-solid fa-laptop-medical"></i> Workspace
+            </button>
+            <button class="tab-btn" id="tab-btn-docs" data-tab="docs">
+                <i class="fa-solid fa-book-open-reader"></i> Model Science
+            </button>
+        </nav>
+
+        <!-- Tab Content: Workspace -->
+        <section id="tab-workspace" class="tab-pane active" aria-labelledby="tab-btn-workspace">
+            <div class="grid-layout">
+                <!-- Configuration Card -->
+                <div class="card config-card">
+                    <h2 class="card-title"><i class="fa-solid fa-sliders-h"></i> Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="select-direction">Translation Direction</label>
+                        <select id="select-direction" class="form-select">
+                            <option value="xray2ct">Chest X-ray ➜ Axial CT Slice</option>
+                            <option value="ct2xray">Axial CT Slice ➜ Chest X-ray</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Sample Image</label>
+                        <div class="sample-gallery" id="sample-gallery">
+                            <!-- Xray Samples -->
+                            <button class="sample-btn active-xray" data-img="/static/samples/xray_sample1.png" data-type="xray" id="btn-sample-xray1">
+                                <span class="sample-thumb xray-thumb"></span>
+                                X-ray A
+                            </button>
+                            <button class="sample-btn active-xray" data-img="/static/samples/xray_sample2.png" data-type="xray" id="btn-sample-xray2">
+                                <span class="sample-thumb xray-thumb"></span>
+                                X-ray B
+                            </button>
+                            <!-- CT Samples -->
+                            <button class="sample-btn active-ct hidden" data-img="/static/samples/ct_sample1.png" data-type="ct" id="btn-sample-ct1">
+                                <span class="sample-thumb ct-thumb"></span>
+                                CT Slice A
+                            </button>
+                            <button class="sample-btn active-ct hidden" data-img="/static/samples/ct_sample2.png" data-type="ct" id="btn-sample-ct2">
+                                <span class="sample-thumb ct-thumb"></span>
+                                CT Slice B
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="info-note">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <p>Generate high-fidelity, anatomically consistent synthetic scans locally using unsupervised translation.</p>
+                    </div>
+                </div>
+
+                <!-- Translation Workspace Card -->
+                <div class="card workspace-card">
+                    <div class="workspace-views">
+                        <!-- Source Upload Panel -->
+                        <div class="view-panel">
+                            <h3>Source Scan</h3>
+                            <div class="drop-zone" id="drop-zone">
+                                <input type="file" id="file-input" accept="image/*" class="file-hidden">
+                                <div class="drop-prompt" id="drop-prompt">
+                                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                                    <p class="primary-text">Drag & drop image here</p>
+                                    <p class="secondary-text">or click to browse local files</p>
+                                </div>
+                                <div class="preview-container hidden" id="preview-container">
+                                    <img id="source-preview" src="" alt="Source preview image">
+                                    <button class="btn-clear" id="btn-clear" title="Clear image">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Process Action Column -->
+                        <div class="action-column">
+                            <button class="btn btn-primary" id="btn-translate" disabled>
+                                <span class="btn-text">Run AI Translation</span>
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </button>
+                        </div>
+
+                        <!-- Target Result Panel -->
+                        <div class="view-panel">
+                            <h3>Generated Synthesis</h3>
+                            <div class="result-zone" id="result-zone">
+                                <div class="result-placeholder" id="result-placeholder">
+                                    <i class="fa-solid fa-radiation radiation-icon"></i>
+                                    <p>Translated result will appear here</p>
+                                </div>
+                                <div class="result-container hidden" id="result-container">
+                                    <img id="result-image" src="" alt="Synthesized medical image">
+                                    <a id="btn-download" href="#" download="synthesized_scan.png" class="btn-download" title="Download image">
+                                        <i class="fa-solid fa-download"></i>
+                                    </a>
+                                </div>
+                                <div class="spinner-container hidden" id="spinner-container">
+                                    <div class="spinner"></div>
+                                    <span class="spinner-text">Reconstructing clinical features...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab Content: Docs -->
+        <section id="tab-docs" class="tab-pane" aria-labelledby="tab-btn-docs">
+            <div class="card docs-card">
+                <h2>CycleGAN for Unpaired Image-to-Image Translation</h2>
+                
+                <div class="docs-grid">
+                    <div class="docs-text">
+                        <h3>Medical Imaging Domain Mapping</h3>
+                        <p>
+                            Chest radiographs (2D X-rays) and axial CT slices represent drastically different imaging modalities. 
+                            While X-rays are projection images displaying overlapping thoracic structures, CT slices capture cross-sectional anatomical slices. 
+                        </p>
+                        <p>
+                            <strong>SynthoCT</strong> utilizes a <em>CycleGAN</em> framework, enabling unsupervised translation without matched image pairs. 
+                            It maps texture domains while conserving general structural configurations.
+                        </p>
+
+                        <h3>Deep Learning Architecture</h3>
+                        <ul>
+                            <li>
+                                <strong>Generators</strong>: A 9-block ResNet framework that downsamples, bottleneck-processes, and upsamples inputs, ensuring fine-grained, localized texture preservation.
+                            </li>
+                            <li>
+                                <strong>Discriminators</strong>: A 70x70 PatchGAN network which evaluates overlapping $70\times 70$ pixel blocks for realistic medical texture mapping.
+                            </li>
+                            <li>
+                                <strong>Loss Formulations</strong>: Integrates Least Squares GAN loss (LSGAN), L1 Cycle-Consistency loss (Weight: 10.0), and Identity Mapping loss (Weight: 5.0).
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="architecture-visual">
+                        <div class="arch-box">
+                            <span class="arch-tag g-tag">Generator G (X-ray ➜ CT)</span>
+                            <div class="arch-flow">
+                                <span>Input X-ray</span> ➜ <span>ResNet Bottleneck</span> ➜ <span>Fake CT</span>
+                            </div>
+                        </div>
+                        <div class="arch-box">
+                            <span class="arch-tag g-tag">Generator F (CT ➜ X-ray)</span>
+                            <div class="arch-flow">
+                                <span>Input CT Slice</span> ➜ <span>ResNet Bottleneck</span> ➜ <span>Fake X-ray</span>
+                            </div>
+                        </div>
+                        <div class="arch-box">
+                            <span class="arch-tag d-tag">Discriminators (D_A & D_B)</span>
+                            <div class="arch-flow">
+                                <span>70x70 Patch Judgement</span> ➜ <span>Linguistic/Texture Realism Score</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container footer-container">
+            <p>&copy; 2026 SynthoCT Project. Powered by PyTorch & FastAPI.</p>
+            <div class="footer-links">
+                <span>Unsupervised Generative Model V1.0.0</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
